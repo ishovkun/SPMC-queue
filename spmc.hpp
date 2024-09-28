@@ -33,11 +33,11 @@ class SPMC {
   bool tryPush(const T& value) {
     // u32 tail = _tail .load(std::memory_order_acquire);
     u32 tail = _tail_local;
-    _buffer[tail] = value;
     u32 new_tail = increment(tail);
     if (new_tail == _head.load(std::memory_order_acquire)) {
       return false;
     }
+    _buffer[tail] = value;
     _tail.store(new_tail, std::memory_order_release);
     _tail_local = new_tail;
     return true;
