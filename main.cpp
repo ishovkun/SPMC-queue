@@ -67,10 +67,13 @@ auto main(int argc, char *argv[]) -> int {
 
   srand(0);
   auto producer = std::thread([&](){
+
+    // count of writes
+    size_t count = 0;
+    // I am taking the average of measurements to get a more reliable result
     double sum_stamps = 0;
     size_t stamp_count = 0;
 
-    size_t count = 0;
     auto start = std::chrono::high_resolution_clock::now();
     while (true) {
       auto value = rand();
@@ -86,7 +89,8 @@ auto main(int argc, char *argv[]) -> int {
           auto bandwidth = count / (double)duration;
           sum_stamps += bandwidth;
           auto avg = sum_stamps / stamp_count;
-          std::cout << "Bandwidth = " << count / (double)duration << " [writes/s] (avg = " << avg << ")" << std::endl;
+          std::cout << "Bandwidth = " << count / (double)duration << " [writes/ms] (avg = " << avg << ")" << std::endl;
+          // restart the count/timer
           count = 0;
           start = std::chrono::high_resolution_clock::now();
         }
