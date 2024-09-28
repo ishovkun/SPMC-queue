@@ -13,6 +13,7 @@ class SPMC {
   std::unique_ptr<T[]> _buffer;
   u32 _size;
   static constexpr int cache_line_size = 128;  // 128 on M2, 64 on x86
+  // static constexpr int cache_line_size = std::hardware_destructive_interference_size;  // not working on mac
   alignas(cache_line_size) std::atomic<u32> _head;
   alignas(cache_line_size) std::atomic<u32> _tail;
   alignas(cache_line_size) u32 _tail_local;
