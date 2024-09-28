@@ -22,9 +22,9 @@ class SPMC {
 
  public:
   SPMC(u32 size)
-      : _size(size+1)  // one empty trailing element
+      : _size(size)  // one empty trailing element
   {
-    _buffer = std::make_unique<T[]>(size);
+    _buffer = std::make_unique<T[]>(size+1);
     _head.store(0, std::memory_order_relaxed);
     _tail.store(0, std::memory_order_relaxed);
     _tail_local = 0;
