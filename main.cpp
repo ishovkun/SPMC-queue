@@ -3,7 +3,61 @@
 #include <chrono>
 #include <thread>
 
+bool test() {
+  int capacity = 100;
+  SPMC<int> spmc(capacity);
+
+  std::vector<int> out(capacity);
+  std::atomic<int> last{0};
+
+  std::array<std::thread, 5> consumers;
+  for (auto &consumer : consumers) {
+    consumer = std::thread([&](){
+      while (true) {
+        int value;
+        bool success = spmc.tryPop(value);
+        if (last == capacity) {
+          // std::cout << "thread exited" << std::endl;
+          break;
+        }
+        if (success) {
+          auto pos = last.fetch_add(1);
+          out[pos] = value;
+        }
+      }
+    });
+  }
+
+  // std::cout << "producer started" << std::endl;
+  for (int i = 0; i < capacity; i++) {
+    auto success = spmc.tryPush(i);
+    if (!success) {
+      std::cout << "Failed to push " << i << std::endl;
+      return false;
+    }
+  }
+
+  for (auto &consumer : consumers) {
+    consumer.join();
+  }
+  std::sort(out.begin(), out.end());
+  for (int i = 0; i < capacity; i++) {
+    if (out[i] != i) {
+      std::cout << "Expected " << i << " but got " << out[i] << std::endl;
+      return false;
+    }
+  }
+  return true;
+}
+
 auto main(int argc, char *argv[]) -> int {
+
+  auto pass = test();
+  if (!pass) {
+    std::cout << "Test failed" << std::endl;
+    return 1;
+  }
+  std::cout << "pass" << std::endl;
 
   int capacity = 100;
   if (argc > 1) {
