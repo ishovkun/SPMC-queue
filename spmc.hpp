@@ -4,9 +4,7 @@
 #include <cassert>
 #include <iostream>
 
-using u8 = uint8_t;
 using u32 = uint32_t;
-
 
 template <typename T>
 class SPMC {
@@ -23,7 +21,9 @@ class SPMC {
   }
 
  public:
-  SPMC(u32 size) : _size(size) {
+  SPMC(u32 size)
+      : _size(size+1)  // one empty trailing element
+  {
     _buffer = std::make_unique<T[]>(size);
     _head.store(0, std::memory_order_relaxed);
     _tail.store(0, std::memory_order_relaxed);
@@ -34,6 +34,8 @@ class SPMC {
     // u32 tail = _tail .load(std::memory_order_acquire);
     u32 tail = _tail_local;
     u32 new_tail = increment(tail);
+    // we compare new_tail so that we keep one empty element at
+    // the end
     if (new_tail == _head.load(std::memory_order_acquire)) {
       return false;
     }
